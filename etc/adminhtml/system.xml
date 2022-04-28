@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="outeredge" translate="label" sortOrder="2000" class="outeredge-tab">
+            <label>outer/edge</label>
+        </tab>
+        <section id="oe_hreflang" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Hreflang Configuration</label>
+            <tab>outeredge</tab>
+            <resource>OuterEdge_Hreflang::HreflangConfig</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="type" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Type</label>
+                    <source_model>OuterEdge\Hreflang\Model\Config\Source\HreflangType</source_model>
+                </field>
+                <field id="alt_baseurl" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Alternate base URL</label>
+                    <can_be_empty>1</can_be_empty>
+                    <depends>
+                        <field id="type">remote</field>
+                    </depends>
+                </field>
+                <field id="hreflang" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>hreflang for alternate URLs</label>
+                    <can_be_empty>1</can_be_empty>
+                    <depends>
+                        <field id="type">remote</field>
+                    </depends>
+                </field>
+                <field id="hreflang_local" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>hreflang for local URLs</label>
+                    <can_be_empty>1</can_be_empty>
+                    <depends>
+                        <field id="type">remote</field>
+                    </depends>
+                </field>
+                <field id="alternate_mirror" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mirror alternate URLs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        Mirror the current store's URL path for the alternate URL - Useful if the URL paths for the current and alternate stores are the same.
+                        Can still be overridden on a per product/category basis.
+                    </comment>
+                    <depends>
+                        <field id="type">remote</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
