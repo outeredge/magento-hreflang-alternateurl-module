@@ -9,6 +9,8 @@ use Magento\Framework\View\Asset\GroupedCollection;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Registry;
+use OuterEdge\Hreflang\Model\Config\Source\StoreLang;
+use Magento\Framework\Locale\Resolver as LocaleResolver;
 
 class MetaTags implements ObserverInterface
 {
@@ -50,6 +52,16 @@ class MetaTags implements ObserverInterface
     protected $registry;
 
     /**
+     * @var StoreLang
+     */
+    protected $storeLang;
+
+    /**
+     * @var LocaleResolver
+     */
+    protected $resolver;
+
+    /**
      * @param Config $pageConfig
      * @param LayerResolver $layerResolver
      * @param AssetRepository $assetRepo
@@ -57,6 +69,8 @@ class MetaTags implements ObserverInterface
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
      * @param Registry $registry
+     * @param StoreLang $storeLang
+     * @param LocaleResolver $resolver
      */
     public function __construct(
         Config $pageConfig,
@@ -65,7 +79,9 @@ class MetaTags implements ObserverInterface
         GroupedCollection $pageAssets,
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
-        Registry $registry
+        Registry $registry,
+        StoreLang $storeLang,
+        LocaleResolver $resolver
     ) {
         $this->_pageConfig = $pageConfig;
         $this->catalogLayer = $layerResolver->get();
@@ -74,6 +90,8 @@ class MetaTags implements ObserverInterface
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->registry = $registry;
+        $this->storeLang = $storeLang;
+        $this->resolver = $resolver;
     }
 
     /**
@@ -106,13 +124,24 @@ class MetaTags implements ObserverInterface
                 $altUrl = $mirrorPath . $this->getProduct()->getUrlKey();
             }
 
-            if ($altUrl && $this->getHreflangType == 'local') {
-                die('1');
-                $altUrl = $alternateBase.'/'.$altUrl;
-                $this->addAlternateLinkRel($altUrl, $altLang);
+            if ($altUrl && $this->getHreflangType() == 'local') {
+
+                foreach ($this->storeLang->getAllStoresLang() as $lang) {
+                    $currentStoreLang = $this->resolver->getLocale();
+
+                    if ($lang != $currentStoreLang) {
+                        $cleanBaseUrl = dirname($baseUrl);
+                        $productUrl = $altUrl;
+                        $urlLang = strtok($lang, '_');
+                        $slash = '/';
+
+                        $alternativeUrlByStore = $cleanBaseUrl.$slash.$urlLang.$slash.$productUrl;
+                        $this->addAlternateLinkRel($alternativeUrlByStore, $lang);
+                    }
+                }
             } else {
-                $altUrl = $alternateBase.'/'.$altUrl;
-                $this->addAlternateLinkRel($altUrl, $altLang);
+                /*$altUrl = $alternateBase.'/'.$altUrl;
+                $this->addAlternateLinkRel($altUrl, $altLang);*/
             }
 
         } elseif($this->getCategory()) {
