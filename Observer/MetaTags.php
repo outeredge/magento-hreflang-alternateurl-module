@@ -106,7 +106,11 @@ class MetaTags implements ObserverInterface
                 $altUrl = $mirrorPath . $this->getProduct()->getUrlKey();
             }
 
-            if ($altUrl) {
+            if ($altUrl && $this->getHreflangType == 'local') {
+                die('1');
+                $altUrl = $alternateBase.'/'.$altUrl;
+                $this->addAlternateLinkRel($altUrl, $altLang);
+            } else {
                 $altUrl = $alternateBase.'/'.$altUrl;
                 $this->addAlternateLinkRel($altUrl, $altLang);
             }
@@ -193,6 +197,15 @@ class MetaTags implements ObserverInterface
     {
         return $this->scopeConfig->getValue(
             'catalog/hreflang/product_use_categories',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $this->storeManager->getStore()->getStoreId()
+        );
+    }
+
+    private function getHreflangType()
+    {
+        return $this->scopeConfig->getValue(
+            'oe_hreflang/general/type',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getStoreId()
         );
