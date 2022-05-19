@@ -126,10 +126,13 @@ class MetaTags implements ObserverInterface
 
             if ($altUrl && $this->getHreflangType() == 'local') {
 
-                foreach ($this->storeLang->getAllStoresLang() as $lang) {
-                    $currentStoreLang = $this->resolver->getLocale();
+                $currentStoreLang = $this->resolver->getLocale();
+                $productActiveStores = $this->getProduct()->getStoreIds();
 
-                    if ($lang != $currentStoreLang) {
+                foreach ($this->storeLang->getAllStoresLang() as $key => $lang) {
+
+                    //Check if product is active in the store
+                    if ($lang != $currentStoreLang && in_array($key, $productActiveStores)) {
                         $cleanBaseUrl = dirname($baseUrl);
                         $productUrl = $altUrl;
                         $urlLang = strtok($lang, '_');
@@ -139,9 +142,10 @@ class MetaTags implements ObserverInterface
                         $this->addAlternateLinkRel($alternativeUrlByStore, $lang);
                     }
                 }
+
             } else {
-                /*$altUrl = $alternateBase.'/'.$altUrl;
-                $this->addAlternateLinkRel($altUrl, $altLang);*/
+                $altUrl = $alternateBase.'/'.$altUrl;
+                $this->addAlternateLinkRel($altUrl, $altLang);
             }
 
         } elseif($this->getCategory()) {
@@ -182,7 +186,7 @@ class MetaTags implements ObserverInterface
         $this->pageAssets->add(
             "link/{$href}",
             $remoteAsset,
-            ['attributes' => 'rel="alternate" hreflang="en-'.$storeLang.'"']
+            ['attributes' => 'rel="alternate" hreflang="'.$storeLang.'"']
         );
     }
 
