@@ -127,12 +127,11 @@ class MetaTags implements ObserverInterface
             if ($altUrl && $this->getHreflangType() == 'local') {
 
                 $currentStoreLang = $this->resolver->getLocale();
-                $productActiveStores = $this->getProduct()->getStoreIds();
 
-                foreach ($this->storeLang->getAllStoresLang() as $key => $lang) {
+                foreach ($this->storeLang->getAllStoresLang() as $lang) {
 
                     //Check if product is active in the store
-                    if ($lang != $currentStoreLang && in_array($key, $productActiveStores)) {
+                    if ($lang != $currentStoreLang) {
                         $cleanBaseUrl = dirname($baseUrl);
                         $productUrl = $altUrl;
                         $urlLang = strtok($lang, '_');
@@ -192,6 +191,10 @@ class MetaTags implements ObserverInterface
 
     private function getHrefLangLocal()
     {
+        if($this->getHreflangType() == 'local'){
+            return $this->resolver->getLocale();
+        }
+
         return $this->scopeConfig->getValue(
             'web/hreflang/hreflang_local',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
