@@ -151,12 +151,23 @@ class MetaTags implements ObserverInterface
             $url = $this->getCategory()->getUrl();
             $this->addAlternateLinkRel($url, $localLang);
 
-            $mirrorPath = $mirrorUrlPaths ? $this->getCategory()->getUrlPath() : null;
+            $mirrorPath = $mirrorUrlPaths ? $mirrorUrlPaths : $this->getCategory()->getUrlPath();
             $altUrl     = $this->getCategory()->getAlternateUrl() ? $this->getCategory()->getAlternateUrl() : $mirrorPath;
 
             if ($altUrl) {
-                $altUrl = $alternateBase.'/'.$altUrl;
-                $this->addAlternateLinkRel($altUrl, $altLang);
+                foreach ($this->storeLang->getAllStoresLang() as $lang) {
+                    $currentStoreLang = $this->resolver->getLocale();
+
+                    if ($lang != $currentStoreLang) {
+                        $cleanBaseUrl = dirname($baseUrl);
+                        $catUrl = $altUrl;
+                        $urlLang = strtok($lang, '_');
+                        $slash = '/';
+
+                        $alternativeUrlByStore = $cleanBaseUrl.$slash.$urlLang.$slash.$catUrl;
+                        $this->addAlternateLinkRel($alternativeUrlByStore, $lang);
+                    }
+                }
             }
 
         } elseif(in_array($observer->getFullActionName(), [
