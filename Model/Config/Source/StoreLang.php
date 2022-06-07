@@ -40,8 +40,12 @@ class StoreLang
         $stores = $this->storeManager->getStores($withDefault = false);
 
         foreach($stores as $store) {
-            $locale[$store->getStoreId()] = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getStoreId());
+
+            $langPrefix = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getStoreId());
+            $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
+            $locale[$langPrefix] = $langUlr;
         }
+
         return $locale;
     }
 }
