@@ -2,7 +2,7 @@
     "name": "outeredge/magento-hreflang-alternateurl-module",
     "description": "Magento Alternate URL & hreflang Module by outer/edge",
     "type": "magento2-module",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "license": [
         "MIT"
     ],
