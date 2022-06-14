@@ -106,6 +106,7 @@ class MetaTags implements ObserverInterface
         $altLang        = $this->getHrefLang();
         $alternateBase  = $this->getHrefLangBaseurl();
         $mirrorUrlPaths = $this->getMirrorUrlPaths();
+        $currentStoreLang = $this->resolver->getLocale();
 
         if ($this->getProduct()) {
             $this->addAlternateLinkRel($this->getProduct()->getProductUrl(), $localLang);
@@ -126,19 +127,10 @@ class MetaTags implements ObserverInterface
 
             if ($altUrl && $this->getHreflangType() == 'local') {
 
-                $currentStoreLang = $this->resolver->getLocale();
+                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
 
-                foreach ($this->storeLang->getAllStoresLang() as $lang) {
-
-                    //Check if product is active in the store
                     if ($lang != $currentStoreLang) {
-                        $cleanBaseUrl = dirname($baseUrl);
-                        $productUrl = $altUrl;
-                        $urlLang = strtok($lang, '_');
-                        $slash = '/';
-
-                        $alternativeUrlByStore = $cleanBaseUrl.$slash.$urlLang.$slash.$productUrl;
-                        $this->addAlternateLinkRel($alternativeUrlByStore, $lang);
+                        $this->addAlternateLinkRel($alternativeUrl, $lang);
                     }
                 }
 
@@ -151,12 +143,17 @@ class MetaTags implements ObserverInterface
             $url = $this->getCategory()->getUrl();
             $this->addAlternateLinkRel($url, $localLang);
 
-            $mirrorPath = $mirrorUrlPaths ? $this->getCategory()->getUrlPath() : null;
+            $mirrorPath = $mirrorUrlPaths ? $mirrorUrlPaths : $this->getCategory()->getUrlPath();
             $altUrl     = $this->getCategory()->getAlternateUrl() ? $this->getCategory()->getAlternateUrl() : $mirrorPath;
 
             if ($altUrl) {
-                $altUrl = $alternateBase.'/'.$altUrl;
-                $this->addAlternateLinkRel($altUrl, $altLang);
+                
+                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
+                    
+                    if ($lang != $currentStoreLang) {
+                        $this->addAlternateLinkRel($alternativeUrl, $lang);
+                    }
+                }
             }
 
         } elseif(in_array($observer->getFullActionName(), [
