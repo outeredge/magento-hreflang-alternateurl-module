@@ -6,6 +6,12 @@ use Magento\Framework\Option\ArrayInterface;
 
 class HreflangType implements ArrayInterface
 {
+    public CONST HREFLANG_LOCAL = 'local';
+
+    public CONST HREFLANG_LOCAL_WEBSITES = 'local_websites';
+
+    public CONST HREFLANG_REMOTE = 'remote';
+
     /**
      * Options getter
      *
@@ -15,15 +21,15 @@ class HreflangType implements ArrayInterface
     {
         return [
             [
-                'value' => 'local',
+                'value' => self::HREFLANG_LOCAL,
                 'label' => __('Use Magento store views')
             ],
             [
-                'value' => 'local_websites',
+                'value' => self::HREFLANG_LOCAL_WEBSITES,
                 'label' => __('Use Magento websites')
             ],
             [
-                'value' => 'remote',
+                'value' => self::HREFLANG_REMOTE,
                 'label' => __('Remote - Separate website or Magento installation')
             ]
         ];

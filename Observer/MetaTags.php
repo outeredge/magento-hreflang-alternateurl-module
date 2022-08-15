@@ -11,6 +11,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Registry;
 use OuterEdge\Hreflang\Model\Config\Source\StoreLang;
 use Magento\Framework\Locale\Resolver as LocaleResolver;
+use OuterEdge\Hreflang\Model\Config\Source\HreflangType;
 
 class MetaTags implements ObserverInterface
 {
@@ -125,15 +126,12 @@ class MetaTags implements ObserverInterface
                 $altUrl = $mirrorPath . $this->getProduct()->getUrlKey();
             }
 
-            if ($altUrl && $this->getHreflangType() == 'local') {
+            if ($altUrl && ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL ||
+                $this->getHreflangType() == HreflangType::HREFLANG_LOCAL_WEBSITES)) {
 
-                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
-
-                    if ($lang != $currentStoreLang) {
-                        $this->addAlternateLinkRel($alternativeUrl, $lang);
-                    }
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getProduct()) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
-
             } else {
                 $altUrl = $alternateBase.'/'.$altUrl;
                 $this->addAlternateLinkRel($altUrl, $altLang);
@@ -147,12 +145,8 @@ class MetaTags implements ObserverInterface
             $altUrl     = $this->getCategory()->getAlternateUrl() ? $this->getCategory()->getAlternateUrl() : $mirrorPath;
 
             if ($altUrl) {
-                
-                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
-                    
-                    if ($lang != $currentStoreLang) {
-                        $this->addAlternateLinkRel($alternativeUrl, $lang);
-                    }
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getCategory()) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             }
 
@@ -164,12 +158,18 @@ class MetaTags implements ObserverInterface
                 'blog_post_view'
             ])) {
 
+            if ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL_WEBSITES) {
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
+                }
+            }
+
             $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
             $urlPath    = str_replace($baseUrl, '', $currentUrl);
             $altUrl     = $alternateBase.'/'.$urlPath;
-
             $this->addAlternateLinkRel($currentUrl, $localLang);
             $this->addAlternateLinkRel($altUrl, $altLang);
+
         }
     }
 
@@ -188,7 +188,7 @@ class MetaTags implements ObserverInterface
 
     private function getHrefLangLocal()
     {
-        if($this->getHreflangType() == 'local'){
+        if ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL) {
             return $this->resolver->getLocale();
         }
 
