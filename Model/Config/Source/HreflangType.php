@@ -16,7 +16,11 @@ class HreflangType implements ArrayInterface
         return [
             [
                 'value' => 'local',
-                'label' => __('Local - Use Magento store views')
+                'label' => __('Use Magento store views')
+            ],
+            [
+                'value' => 'local_websites',
+                'label' => __('Use Magento websites')
             ],
             [
                 'value' => 'remote',
