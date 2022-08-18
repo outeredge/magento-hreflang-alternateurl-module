@@ -69,7 +69,7 @@ class StoreLang
                     }
                 }
                 if (get_class($obj) == 'Magento\Catalog\Model\Product\Interceptor') {
-                    if (!in_array($store->getId(), $obj->getWebsiteIds())) {
+                    if (!in_array($store->getId(), $obj->getStoreIds())) {
                         continue;
                     }
                 }
