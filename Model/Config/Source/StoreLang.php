@@ -2,6 +2,8 @@
 
 namespace OuterEdge\Hreflang\Model\Config\Source;
 
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\Product;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
@@ -47,6 +49,7 @@ class StoreLang
     {
         $locale = [];
         $stores = $this->storeManager->getStores($withDefault = false);
+        $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach($stores as $store) {
             $langPrefix = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getStoreId());
@@ -56,22 +59,18 @@ class StoreLang
                 continue;
             }
 
-            if ($obj) {
-                if (get_class($obj) == 'Magento\Catalog\Model\Category\Interceptor') {
+            if ($type == 'category') {
+                $storeCategories = $this->categoryCollectionFactory->create();
+                $storeCategories->setStore($store)
+                        ->addAttributeToFilter('entity_id', $obj->getId())
+                        ->addAttributeToFilter('is_active', 1);
 
-                    $storeCategories = $this->categoryCollectionFactory->create();
-                    $storeCategories->setStore($store)
-                            ->addAttributeToFilter('entity_id', $obj->getId())
-                            ->addAttributeToFilter('is_active', 1);
-
-                    if (empty($storeCategories->getData())) {
-                        continue;
-                    }
+                if (empty($storeCategories->getData())) {
+                    continue;
                 }
-                if (get_class($obj) == 'Magento\Catalog\Model\Product\Interceptor') {
-                    if (!in_array($store->getId(), $obj->getStoreIds())) {
-                        continue;
-                    }
+            } elseif ($type == 'product') {
+                if (!in_array($store->getId(), $obj->getStoreIds())) {
+                    continue;
                 }
             }
 
