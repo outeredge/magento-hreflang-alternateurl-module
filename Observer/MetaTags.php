@@ -126,8 +126,7 @@ class MetaTags implements ObserverInterface
                 $altUrl = $mirrorPath . $this->getProduct()->getUrlKey();
             }
 
-            if ($altUrl && ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL ||
-                $this->getHreflangType() == HreflangType::HREFLANG_LOCAL_WEBSITES)) {
+            if ($altUrl && ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE)) {
 
                 foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getProduct()) as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
@@ -158,18 +157,19 @@ class MetaTags implements ObserverInterface
                 'blog_post_view'
             ])) {
 
+            $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
+            $urlPath    = str_replace($baseUrl, '', $currentUrl);
+            $altUrl     = $alternateBase.'/'.$urlPath;
+
+            $this->addAlternateLinkRel($currentUrl, $localLang);
+
             if ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL_WEBSITES) {
                 foreach ($this->storeLang->getAllStoresLang($currentStoreLang) as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
+            } else {
+                $this->addAlternateLinkRel($altUrl, $altLang);
             }
-
-            $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
-            $urlPath    = str_replace($baseUrl, '', $currentUrl);
-            $altUrl     = $alternateBase.'/'.$urlPath;
-            $this->addAlternateLinkRel($currentUrl, $localLang);
-            $this->addAlternateLinkRel($altUrl, $altLang);
-
         }
     }
 
@@ -188,7 +188,7 @@ class MetaTags implements ObserverInterface
 
     private function getHrefLangLocal()
     {
-        if ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL) {
+        if ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE) {
             return $this->resolver->getLocale();
         }
 
