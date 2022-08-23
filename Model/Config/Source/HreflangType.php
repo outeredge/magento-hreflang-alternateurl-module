@@ -25,10 +25,6 @@ class HreflangType implements ArrayInterface
                 'label' => __('Use Magento store views')
             ],
             [
-                'value' => self::HREFLANG_LOCAL_WEBSITES,
-                'label' => __('Use Magento websites')
-            ],
-            [
                 'value' => self::HREFLANG_REMOTE,
                 'label' => __('Remote - Separate website or Magento installation')
             ]

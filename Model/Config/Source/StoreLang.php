@@ -51,7 +51,12 @@ class StoreLang
         $stores = $this->storeManager->getStores($withDefault = false);
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
-        foreach($stores as $store) {
+        foreach ($stores as $store) {
+
+            if (!$this->getAlternateUrlForStore($store->getStoreId())) {
+                continue;
+            }
+
             $langPrefix = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getStoreId());
             $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
 
@@ -78,5 +83,14 @@ class StoreLang
         }
 
         return $locale;
+    }
+
+    private function getAlternateUrlForStore($storeId)
+    {
+        return $this->scopeConfig->getValue(
+            'oe_hreflang/general/alternate_url_for_store',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 }
