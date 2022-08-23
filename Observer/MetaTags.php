@@ -163,7 +163,7 @@ class MetaTags implements ObserverInterface
 
             $this->addAlternateLinkRel($currentUrl, $localLang);
 
-            if ($this->getHreflangType() == HreflangType::HREFLANG_LOCAL_WEBSITES) {
+            if ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE) {
                 foreach ($this->storeLang->getAllStoresLang($currentStoreLang) as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
