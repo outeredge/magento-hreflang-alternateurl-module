@@ -11,6 +11,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Registry;
 use OuterEdge\Hreflang\Model\Config\Source\StoreLang;
 use Magento\Framework\Locale\Resolver as LocaleResolver;
+use OuterEdge\Hreflang\Model\Config\Source\HreflangType;
 
 class MetaTags implements ObserverInterface
 {
@@ -109,7 +110,9 @@ class MetaTags implements ObserverInterface
         $currentStoreLang = $this->resolver->getLocale();
 
         if ($this->getProduct()) {
-            $this->addAlternateLinkRel($this->getProduct()->getProductUrl(), $localLang);
+            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
+                $this->addAlternateLinkRel($this->getProduct()->getProductUrl(), $localLang);
+            }
 
             $categoryUrl = '';
             $category    = $this->registry->registry('current_category');
@@ -125,51 +128,51 @@ class MetaTags implements ObserverInterface
                 $altUrl = $mirrorPath . $this->getProduct()->getUrlKey();
             }
 
-            if ($altUrl && $this->getHreflangType() == 'local') {
-
-                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
-
-                    if ($lang != $currentStoreLang) {
-                        $this->addAlternateLinkRel($alternativeUrl, $lang);
-                    }
+            if ($altUrl && ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE)) {
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getProduct()) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
-
             } else {
                 $altUrl = $alternateBase.'/'.$altUrl;
                 $this->addAlternateLinkRel($altUrl, $altLang);
             }
-
-        } elseif($this->getCategory()) {
+        } elseif ($this->getCategory()) {
             $url = $this->getCategory()->getUrl();
-            $this->addAlternateLinkRel($url, $localLang);
+
+            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
+                $this->addAlternateLinkRel($url, $localLang);
+            }
 
             $mirrorPath = $mirrorUrlPaths ? $mirrorUrlPaths : $this->getCategory()->getUrlPath();
             $altUrl     = $this->getCategory()->getAlternateUrl() ? $this->getCategory()->getAlternateUrl() : $mirrorPath;
 
             if ($altUrl) {
-                
-                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
-                    
-                    if ($lang != $currentStoreLang) {
-                        $this->addAlternateLinkRel($alternativeUrl, $lang);
-                    }
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getCategory()) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             }
-
-        } elseif(in_array($observer->getFullActionName(), [
+        } elseif (in_array($observer->getFullActionName(), [
                 'cms_index_index',
                 'cms_page_view',
                 'blog_category_view',
                 'blog_index_index',
                 'blog_post_view'
             ])) {
-
             $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
             $urlPath    = str_replace($baseUrl, '', $currentUrl);
             $altUrl     = $alternateBase.'/'.$urlPath;
 
-            $this->addAlternateLinkRel($currentUrl, $localLang);
-            $this->addAlternateLinkRel($altUrl, $altLang);
+            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
+                $this->addAlternateLinkRel($currentUrl, $localLang);
+            }
+
+            if ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE) {
+                foreach ($this->storeLang->getAllStoresLang($currentStoreLang) as $lang => $alternativeUrl) {
+                    $this->addAlternateLinkRel($alternativeUrl, $lang);
+                }
+            } else {
+                $this->addAlternateLinkRel($altUrl, $altLang);
+            }
         }
     }
 
@@ -186,9 +189,9 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getHrefLangLocal()
+    protected function getHrefLangLocal()
     {
-        if($this->getHreflangType() == 'local'){
+        if ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE) {
             return $this->resolver->getLocale();
         }
 
@@ -199,7 +202,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getHrefLang()
+    protected function getHrefLang()
     {
         return $this->scopeConfig->getValue(
             'web/hreflang/hreflang',
@@ -208,7 +211,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getHrefLangBaseurl()
+    protected function getHrefLangBaseurl()
     {
         return $this->scopeConfig->getValue(
             'web/hreflang/hreflang_baseurl',
@@ -217,7 +220,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getMirrorUrlPaths()
+    protected function getMirrorUrlPaths()
     {
         return $this->scopeConfig->getValue(
             'web/hreflang/alternate_mirror',
@@ -226,7 +229,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getUseCategoryPathForProduct()
+    protected function getUseCategoryPathForProduct()
     {
         return $this->scopeConfig->getValue(
             'catalog/hreflang/product_use_categories',
@@ -235,7 +238,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getHreflangType()
+    protected function getHreflangType()
     {
         return $this->scopeConfig->getValue(
             'oe_hreflang/general/type',
@@ -244,7 +247,7 @@ class MetaTags implements ObserverInterface
         );
     }
 
-    private function getProduct()
+    protected function getProduct()
     {
         $product = $this->registry->registry('product');
         if (!$product) {
@@ -253,7 +256,7 @@ class MetaTags implements ObserverInterface
         return $product;
     }
 
-    private function getCategory()
+    protected function getCategory()
     {
         $category = $this->registry->registry('current_category');
         if (!$category) {
@@ -261,5 +264,4 @@ class MetaTags implements ObserverInterface
         }
         return $category;
     }
-
 }

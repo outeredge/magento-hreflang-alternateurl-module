@@ -15,9 +15,7 @@
         }
     ],
     "require-dev": {
-        "magento-ecg/coding-standard": "~3.0",
-        "outeredge/coding-standards": "~1.0.0",
-        "squizlabs/php_codesniffer": "^3.0"
+        "outeredge/dev-dependencies": "^3.0"
     },
     "autoload": {
         "files": [
@@ -25,6 +23,11 @@
         ],
         "psr-4": {
             "OuterEdge\\Hreflang\\": ""
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
         }
     }
 }
