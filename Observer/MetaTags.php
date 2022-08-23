@@ -136,8 +136,7 @@ class MetaTags implements ObserverInterface
                 $altUrl = $alternateBase.'/'.$altUrl;
                 $this->addAlternateLinkRel($altUrl, $altLang);
             }
-
-        } elseif($this->getCategory()) {
+        } elseif ($this->getCategory()) {
             $url = $this->getCategory()->getUrl();
 
             if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
@@ -152,15 +151,13 @@ class MetaTags implements ObserverInterface
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             }
-
-        } elseif(in_array($observer->getFullActionName(), [
+        } elseif (in_array($observer->getFullActionName(), [
                 'cms_index_index',
                 'cms_page_view',
                 'blog_category_view',
                 'blog_index_index',
                 'blog_post_view'
             ])) {
-
             $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
             $urlPath    = str_replace($baseUrl, '', $currentUrl);
             $altUrl     = $alternateBase.'/'.$urlPath;

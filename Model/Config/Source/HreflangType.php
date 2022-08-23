@@ -6,9 +6,9 @@ use Magento\Framework\Option\ArrayInterface;
 
 class HreflangType implements ArrayInterface
 {
-    public CONST HREFLANG_LOCAL = 'local';
+    public const HREFLANG_LOCAL = 'local';
 
-    public CONST HREFLANG_REMOTE = 'remote';
+    public const HREFLANG_REMOTE = 'remote';
 
     /**
      * Options getter

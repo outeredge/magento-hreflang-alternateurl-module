@@ -52,7 +52,6 @@ class StoreLang
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach ($stores as $store) {
-
             if (!$this->alternateUrlEnabledForStore($store->getStoreId())) {
                 continue;
             }
