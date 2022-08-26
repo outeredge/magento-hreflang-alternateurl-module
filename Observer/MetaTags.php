@@ -181,7 +181,9 @@ class MetaTags implements ObserverInterface
     */
     protected function addAlternateLinkRel($href, $storeLang)
     {
+        $storeLang   = strtolower(str_replace('_', '-', $storeLang));
         $remoteAsset = $this->assetRepo->createRemoteAsset((string)$href, 'unknown');
+
         $this->pageAssets->add(
             "link/{$href}",
             $remoteAsset,
