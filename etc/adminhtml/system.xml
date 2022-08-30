@@ -50,7 +50,7 @@
                     <label>Add alternate URL for store</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="custom_hreflang_tag" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="custom_hreflang_tag" translate="label" type="text" sortOrder="70" showInDefault="0" showInWebsite="0" showInStore="1">
                     <label>Custom Hreflang Tag</label>
                     <can_be_empty>1</can_be_empty>
                     <comment>
