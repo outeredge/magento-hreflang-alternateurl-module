@@ -4,6 +4,7 @@ namespace OuterEdge\Hreflang\Model\Config\Source;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
@@ -56,12 +57,12 @@ class StoreLang
                 continue;
             }
 
-            $langPrefix = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store->getStoreId());
-            $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
-
-            if ($value = $this->getCustomHreflangTagForStore($store->getStoreId())) {
-                $langPrefix = $value;
+            $langPrefix = $this->getCustomHreflangTagForStore($store->getStoreId());
+            if (empty($langPrefix)) {
+                $langPrefix = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $store->getStoreId());
             }
+
+            $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
 
             if ($this->alternateUrlEnabledForStore($this->storeManager->getStore()->getId()) && $langPrefix == $currentStoreLang) {
                 continue;
@@ -92,7 +93,7 @@ class StoreLang
     {
         return $this->scopeConfig->getValue(
             'oe_hreflang/general/alternate_url_for_store',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
@@ -101,7 +102,7 @@ class StoreLang
     {
         return $this->scopeConfig->getValue(
             'oe_hreflang/general/custom_hreflang_tag',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
