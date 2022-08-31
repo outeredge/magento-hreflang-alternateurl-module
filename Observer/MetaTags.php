@@ -103,17 +103,11 @@ class MetaTags implements ObserverInterface
     {
         //Add link rel alternate to head
         $baseUrl        = $this->storeManager->getStore()->getBaseUrl();
-        $localLang      = $this->getHrefLangLocal();
         $altLang        = $this->getHrefLang();
         $alternateBase  = $this->getHrefLangBaseurl();
         $mirrorUrlPaths = $this->getMirrorUrlPaths();
-        $currentStoreLang = $this->resolver->getLocale();
 
         if ($this->getProduct()) {
-            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
-                $this->addAlternateLinkRel($this->getProduct()->getProductUrl(), $localLang);
-            }
-
             $categoryUrl = '';
             $category    = $this->registry->registry('current_category');
 
@@ -129,7 +123,7 @@ class MetaTags implements ObserverInterface
             }
 
             if ($altUrl && ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE)) {
-                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getProduct()) as $lang => $alternativeUrl) {
+                foreach ($this->storeLang->getAllStoresLang($this->getProduct()) as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             } else {
@@ -137,17 +131,11 @@ class MetaTags implements ObserverInterface
                 $this->addAlternateLinkRel($altUrl, $altLang);
             }
         } elseif ($this->getCategory()) {
-            $url = $this->getCategory()->getUrl();
-
-            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
-                $this->addAlternateLinkRel($url, $localLang);
-            }
-
             $mirrorPath = $mirrorUrlPaths ? $mirrorUrlPaths : $this->getCategory()->getUrlPath();
             $altUrl     = $this->getCategory()->getAlternateUrl() ? $this->getCategory()->getAlternateUrl() : $mirrorPath;
 
             if ($altUrl) {
-                foreach ($this->storeLang->getAllStoresLang($currentStoreLang, $this->getCategory()) as $lang => $alternativeUrl) {
+                foreach ($this->storeLang->getAllStoresLang($this->getCategory()) as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             }
@@ -162,12 +150,8 @@ class MetaTags implements ObserverInterface
             $urlPath    = str_replace($baseUrl, '', $currentUrl);
             $altUrl     = $alternateBase.'/'.$urlPath;
 
-            if ($this->storeLang->alternateUrlEnabledForStore($this->storeManager->getStore()->getId())) {
-                $this->addAlternateLinkRel($currentUrl, $localLang);
-            }
-
             if ($this->getHreflangType() != HreflangType::HREFLANG_REMOTE) {
-                foreach ($this->storeLang->getAllStoresLang($currentStoreLang) as $lang => $alternativeUrl) {
+                foreach ($this->storeLang->getAllStoresLang() as $lang => $alternativeUrl) {
                     $this->addAlternateLinkRel($alternativeUrl, $lang);
                 }
             } else {

@@ -46,14 +46,14 @@ class StoreLang
      * Get list of Locale for all stores
      * @return array
      */
-    public function getAllStoresLang($currentStoreLang, $obj = false)
+    public function getAllStoresLang($obj = false)
     {
         $locale = [];
         $stores = $this->storeManager->getStores($withDefault = false);
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach ($stores as $store) {
-            if (!$this->alternateUrlEnabledForStore($store->getStoreId())) {
+            if (!$this->alternateUrlEnabledForStore($store)) {
                 continue;
             }
 
@@ -63,10 +63,6 @@ class StoreLang
             }
 
             $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
-
-            if ($this->alternateUrlEnabledForStore($this->storeManager->getStore()->getId()) && $langPrefix == $currentStoreLang) {
-                continue;
-            }
 
             if ($type == 'category') {
                 $storeCategories = $this->categoryCollectionFactory->create();
@@ -89,12 +85,16 @@ class StoreLang
         return $locale;
     }
 
-    public function alternateUrlEnabledForStore($storeId)
+    public function alternateUrlEnabledForStore($store)
     {
+        if (!$store->getIsActive()) {
+            return false;
+        }
+
         return $this->scopeConfig->getValue(
             'oe_hreflang/general/alternate_url_for_store',
             ScopeInterface::SCOPE_STORE,
-            $storeId
+            $store->getStoreId()
         );
     }
 
