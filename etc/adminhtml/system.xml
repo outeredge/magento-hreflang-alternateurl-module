@@ -60,6 +60,13 @@
                         <field id="alternate_url_for_store">1</field>
                     </depends>
                 </field>
+                <field id="only_hreflang_same_domain" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Only show hreflangs from same domain</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="alternate_url_for_store">1</field>
+                    </depends>
+                </field>
             </group>
         </section>
     </system>
