@@ -53,6 +53,14 @@ class StoreLang
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach ($stores as $store) {
+            if ($this->getOnlyHreflangSameDomain($store->getStoreId())) {
+                $currentDomain = parse_url($this->storeManager->getStore()->getBaseUrl(), PHP_URL_HOST);
+                $storeDomain = parse_url($store->getBaseUrl(), PHP_URL_HOST);
+                if ($currentDomain != $storeDomain) {
+                    continue;
+                }
+            }
+
             if (!$this->alternateUrlEnabledForStore($store)) {
                 continue;
             }
@@ -102,6 +110,15 @@ class StoreLang
     {
         return $this->scopeConfig->getValue(
             'oe_hreflang/general/custom_hreflang_tag',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    private function getOnlyHreflangSameDomain($storeId)
+    {
+        return $this->scopeConfig->getValue(
+            'oe_hreflang/general/only_hreflang_same_domain',
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
