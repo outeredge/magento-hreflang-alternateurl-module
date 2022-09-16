@@ -53,14 +53,6 @@ class StoreLang
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach ($stores as $store) {
-            if ($this->getOnlyHreflangSameDomain($store->getStoreId())) {
-                $currentDomain = parse_url($this->storeManager->getStore()->getBaseUrl(), PHP_URL_HOST);
-                $storeDomain = parse_url($store->getBaseUrl(), PHP_URL_HOST);
-                if ($currentDomain != $storeDomain) {
-                    continue;
-                }
-            }
-
             if (!$this->alternateUrlEnabledForStore($store)) {
                 continue;
             }
@@ -87,7 +79,13 @@ class StoreLang
                 }
             }
 
-            $locale[$langPrefix] = $langUlr;
+            if (is_array($langPrefix)) {
+                foreach($langPrefix as $lang) {
+                    $locale[$lang] = $langUlr;
+                }
+            } else {
+                $locale[$langPrefix] = $langUlr;
+            }
         }
 
         return $locale;
@@ -108,19 +106,17 @@ class StoreLang
 
     private function getCustomHreflangTagForStore($storeId)
     {
-        return $this->scopeConfig->getValue(
+        $result = $this->scopeConfig->getValue(
             'oe_hreflang/general/custom_hreflang_tag',
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
-    }
 
-    private function getOnlyHreflangSameDomain($storeId)
-    {
-        return $this->scopeConfig->getValue(
-            'oe_hreflang/general/only_hreflang_same_domain',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
+        $arrayLangs = array_filter(array_map('trim', explode(',', $result)));
+        if (empty($arrayLangs)) {
+            return false;
+        }
+
+        return $arrayLangs;
     }
 }
