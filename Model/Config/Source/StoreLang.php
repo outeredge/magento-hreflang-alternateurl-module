@@ -87,7 +87,13 @@ class StoreLang
                 }
             }
 
-            $locale[$langPrefix] = $langUlr;
+            if (is_array($langPrefix)) {
+                foreach($langPrefix as $lang) {
+                    $locale[$lang] = $langUlr;
+                }
+            } else {
+                $locale[$langPrefix] = $langUlr;
+            }
         }
 
         return $locale;
@@ -108,11 +114,18 @@ class StoreLang
 
     private function getCustomHreflangTagForStore($storeId)
     {
-        return $this->scopeConfig->getValue(
+        $result = $this->scopeConfig->getValue(
             'oe_hreflang/general/custom_hreflang_tag',
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+
+        $arrayLangs = array_filter(array_map('trim', explode(',', $result)));
+        if (empty($arrayLangs)) {
+            return false;
+        }
+
+        return $arrayLangs;
     }
 
     private function getOnlyHreflangSameDomain($storeId)

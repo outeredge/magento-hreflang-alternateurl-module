@@ -54,7 +54,7 @@
                     <label>Custom Hreflang Tag</label>
                     <can_be_empty>1</can_be_empty>
                     <comment>
-                        Leave empty to use store locale.
+                        Leave empty to use store locale, comma separate for multiple
                     </comment>
                     <depends>
                         <field id="alternate_url_for_store">1</field>
