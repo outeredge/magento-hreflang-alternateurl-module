@@ -114,7 +114,7 @@ class StoreLang
 
     private function getCustomHreflangTagForStore($storeId)
     {
-        $result = $this->scopeConfig->getValue(
+        $result = (string) $this->scopeConfig->getValue(
             'oe_hreflang/general/custom_hreflang_tag',
             ScopeInterface::SCOPE_STORE,
             $storeId
