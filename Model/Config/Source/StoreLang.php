@@ -7,7 +7,9 @@ use Magento\Catalog\Model\Product;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class StoreLang
 {
@@ -22,24 +24,32 @@ class StoreLang
     protected $scopeConfig;
 
     /**
-     * @var CollectionFactory
+     * @var CategoryRepositoryInterface
      */
-    protected $categoryCollectionFactory;
+    protected $categoryRepository;
+
+    /**
+     * @var ProductRepositoryInterface
+     */
+    protected $productRepository;
 
     /**
      * Locale constructor.
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
-     * @param CollectionFactory $categoryCollectionFactory
+     * @param CategoryRepositoryInterface $categoryRepository
+     * @param CategoryRepositoryInterface $categoryRepository
      */
     public function __construct(
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
-        CollectionFactory $categoryCollectionFactory
+        CategoryRepositoryInterface $categoryRepository,
+        ProductRepositoryInterface $productRepository
     ) {
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->categoryRepository = $categoryRepository;
+        $this->productRepository = $productRepository;
     }
 
     /**
@@ -72,19 +82,26 @@ class StoreLang
 
             $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
 
-            if ($type == 'category') {
-                $storeCategories = $this->categoryCollectionFactory->create();
-                $storeCategories->setStore($store)
-                        ->addAttributeToFilter('entity_id', $obj->getId())
-                        ->addAttributeToFilter('is_active', 1);
+            try {
+                if ($type == 'category') {
+                    $storeCategory = $this->categoryRepository->get($obj->getId(), $store->getId());
 
-                if (empty($storeCategories->getData())) {
-                    continue;
+                    if (!$storeCategory->getIsActive()) {
+                        continue;
+                    }
+
+                    $langUlr = $storeCategory->getUrl();
+                } elseif ($type == 'product') {
+                    $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
+
+                    if (!in_array($store->getId(), $obj->getStoreIds())) {
+                        continue;
+                    }
+
+                    $langUlr = $storeProduct->getProductUrl();
                 }
-            } elseif ($type == 'product') {
-                if (!in_array($store->getId(), $obj->getStoreIds())) {
-                    continue;
-                }
+            } catch (NoSuchEntityException $e) {
+                continue;
             }
 
             if (is_array($langPrefix)) {
