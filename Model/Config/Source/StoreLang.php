@@ -111,11 +111,11 @@ class StoreLang
 
                     if ($rewrite) {
                         $urlPath = $rewrite->getRequestPath();
+                        $langUlr = $store->getBaseUrl() . $urlPath;
                     } else {
                         $urlPath = $storeCategory->getUrlPath();
+                        $langUlr = $store->getUrl($urlPath);
                     }
-
-                    $langUlr = $store->getBaseUrl() . $urlPath;
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
