@@ -90,7 +90,7 @@ class StoreLang
                         continue;
                     }
 
-                    $langUlr = $storeCategory->getUrl();
+                    $langUlr = $store->getUrl($storeCategory->getUrlPath());
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
