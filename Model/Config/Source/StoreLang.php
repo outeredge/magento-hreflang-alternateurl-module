@@ -2,14 +2,17 @@
 
 namespace OuterEdge\Hreflang\Model\Config\Source;
 
-use Magento\Catalog\Model\Category;
-use Magento\Catalog\Model\Product;
-use Magento\Store\Model\ScopeInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\Product;
+use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
+use Magento\UrlRewrite\Model\UrlFinderInterface;
 
 class StoreLang
 {
@@ -34,22 +37,30 @@ class StoreLang
     protected $productRepository;
 
     /**
+     * @var \Magento\UrlRewrite\Model\UrlFinderInterface
+     */
+    protected $urlFinder;
+
+    /**
      * Locale constructor.
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CategoryRepositoryInterface $categoryRepository
      * @param CategoryRepositoryInterface $categoryRepository
+     * @param UrlFinderInterface $urlFinder
      */
     public function __construct(
         StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig,
         CategoryRepositoryInterface $categoryRepository,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        UrlFinderInterface $urlFinder
     ) {
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
+        $this->urlFinder = $urlFinder;
     }
 
     /**
@@ -90,7 +101,21 @@ class StoreLang
                         continue;
                     }
 
-                    $langUlr = $store->getUrl($storeCategory->getUrlPath());
+                    $rewrite = $this->urlFinder->findOneByData(
+                        [
+                            UrlRewrite::ENTITY_ID => $storeCategory->getId(),
+                            UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
+                            UrlRewrite::STORE_ID => $store->getId(),
+                        ]
+                    );
+
+                    if ($rewrite) {
+                        $urlPath = $rewrite->getRequestPath();
+                    } else {
+                        $urlPath = $storeCategory->getUrlPath();
+                    }
+
+                    $langUlr = $store->getUrl($urlPath);
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
