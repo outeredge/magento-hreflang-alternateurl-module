@@ -115,7 +115,7 @@ class StoreLang
                         $urlPath = $storeCategory->getUrlPath();
                     }
 
-                    $langUlr = $store->getUrl($urlPath);
+                    $langUlr = $store->getBaseUrl() . $urlPath;
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
