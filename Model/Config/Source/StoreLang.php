@@ -125,7 +125,7 @@ class StoreLang
 
                     if ($rewrite) {
                         $urlPath = $rewrite->getRequestPath();
-                        // $langUlr = $store->getBaseUrl() . $urlPath;
+                        // $langUlr = $store->getBaseUrl() . $urlPath;   // Check what this was for, was it to avoice including the store code for the default store?
                     } else {
                         $urlPath = $storeCategory->getUrlPath();
                     }
