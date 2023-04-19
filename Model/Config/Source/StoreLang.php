@@ -14,6 +14,8 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Magento\UrlRewrite\Model\UrlFinderInterface;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\ObjectManagerInterface;
 
 class StoreLang
 {
@@ -48,6 +50,21 @@ class StoreLang
     protected $layeredNavState;
 
     /**
+     * @var ModuleManager
+     */
+    protected $moduleManager;
+
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+
+    /**
+     * @var \Amasty\ShopbyBase\Model\UrlBuilder\UrlModifier
+     */
+    protected $urlModifier = null;
+
+    /**
      * Locale constructor.
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
@@ -61,7 +78,9 @@ class StoreLang
         CategoryRepositoryInterface $categoryRepository,
         ProductRepositoryInterface $productRepository,
         UrlFinderInterface $urlFinder,
-        State $layeredNavState
+        State $layeredNavState,
+        ModuleManager $moduleManager,
+        ObjectManagerInterface $objectManager
     ) {
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
@@ -69,6 +88,12 @@ class StoreLang
         $this->productRepository = $productRepository;
         $this->urlFinder = $urlFinder;
         $this->layeredNavState = $layeredNavState;
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
+
+        if ($this->moduleManager->isEnabled('Amasty_ShopbyBase')) {
+            $this->urlModifier = $this->objectManager->create('Amasty\ShopbyBase\Model\UrlBuilder\UrlModifier');
+        }
     }
 
     /**
@@ -79,6 +104,7 @@ class StoreLang
     {
         $locale = [];
         $stores = $this->storeManager->getStores($withDefault = false);
+        $currentStoreId = $this->storeManager->getStore()->getId();
         $type = $obj instanceof Category ? 'category' : ($obj instanceof Product ? 'product' : null);
 
         foreach ($stores as $store) {
@@ -130,6 +156,13 @@ class StoreLang
                         $urlPath = $storeCategory->getUrlPath();
                     }
                     $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
+
+                    if ($this->urlModifier) {
+                         // Amasty Shopby
+                        $this->storeManager->setCurrentStore($store->getStoreId()); // Set temporarily change store to get Amasty SEO Url for correct store view
+                        $langUlr = $this->urlModifier->execute($langUlr, $storeCategory->getId());
+                    }
+
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
@@ -151,6 +184,7 @@ class StoreLang
                 $locale[$langPrefix] = $langUlr;
             }
         }
+        $this->storeManager->setCurrentStore($currentStoreId); // Reset store view back to current store (See Amasty section above)
 
         return $locale;
     }
