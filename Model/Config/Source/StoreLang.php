@@ -9,6 +9,7 @@ use Magento\Catalog\Model\Product;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\LayeredNavigation\Block\Navigation\State;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
@@ -42,6 +43,11 @@ class StoreLang
     protected $urlFinder;
 
     /**
+     * @var State
+     */
+    protected $layeredNavState;
+
+    /**
      * Locale constructor.
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
@@ -54,13 +60,15 @@ class StoreLang
         ScopeConfigInterface $scopeConfig,
         CategoryRepositoryInterface $categoryRepository,
         ProductRepositoryInterface $productRepository,
-        UrlFinderInterface $urlFinder
+        UrlFinderInterface $urlFinder,
+        State $layeredNavState
     ) {
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->urlFinder = $urlFinder;
+        $this->layeredNavState = $layeredNavState;
     }
 
     /**
@@ -95,7 +103,13 @@ class StoreLang
 
             try {
                 if ($type == 'category') {
-                    $storeCategory = $this->categoryRepository->get($obj->getId(), $store->getId());
+                    $storeCategory   = $this->categoryRepository->get($obj->getId(), $store->getId());
+                    $selectedFilters = $this->layeredNavState->getActiveFilters();
+
+                    $queryParams = [];
+                    foreach($selectedFilters as $filter){
+                        $queryParams [$filter->getFilter()->getRequestVar()] = $filter->getValue();
+                    }
 
                     if (!$storeCategory->getIsActive()) {
                         continue;
@@ -111,11 +125,11 @@ class StoreLang
 
                     if ($rewrite) {
                         $urlPath = $rewrite->getRequestPath();
-                        $langUlr = $store->getBaseUrl() . $urlPath;
+                        // $langUlr = $store->getBaseUrl() . $urlPath;
                     } else {
                         $urlPath = $storeCategory->getUrlPath();
-                        $langUlr = $store->getUrl($urlPath);
                     }
+                    $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
