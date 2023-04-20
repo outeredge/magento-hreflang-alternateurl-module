@@ -129,13 +129,7 @@ class StoreLang
 
             try {
                 if ($type == 'category') {
-                    $storeCategory   = $this->categoryRepository->get($obj->getId(), $store->getId());
-                    $selectedFilters = $this->layeredNavState->getActiveFilters();
-
-                    $queryParams = [];
-                    foreach($selectedFilters as $filter){
-                        $queryParams [$filter->getFilter()->getRequestVar()] = $filter->getValue();
-                    }
+                    $storeCategory = $this->categoryRepository->get($obj->getId(), $store->getId());                   
 
                     if (!$storeCategory->getIsActive()) {
                         continue;
@@ -148,21 +142,28 @@ class StoreLang
                             UrlRewrite::STORE_ID => $store->getId(),
                         ]
                     );
-
+                    
                     if ($rewrite) {
                         $urlPath = $rewrite->getRequestPath();
                         $langUlr = $store->getBaseUrl() . $urlPath;
                     } else {
+                        $selectedFilters = $this->layeredNavState->getActiveFilters();
+
+                        $queryParams = [];
+                        foreach($selectedFilters as $filter){
+                            $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
+                        }                      
+                    
                         $urlPath = $storeCategory->getUrlPath();
                         $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
                     }
 
                     if ($this->urlModifier) {
-                         // Amasty Shopby
-                        $this->storeManager->setCurrentStore($store->getStoreId()); // Set temporarily change store to get Amasty SEO Url for correct store view
+                        // Amasty Shopby
+                        $this->storeManager->setCurrentStore($store->getStoreId());
                         $langUlr = $this->urlModifier->execute($langUlr, $storeCategory->getId());
+                        $this->storeManager->setCurrentStore($currentStoreId);
                     }
-
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
@@ -184,7 +185,6 @@ class StoreLang
                 $locale[$langPrefix] = $langUlr;
             }
         }
-        $this->storeManager->setCurrentStore($currentStoreId); // Reset store view back to current store (See Amasty section above)
 
         return $locale;
     }
