@@ -151,11 +151,11 @@ class StoreLang
 
                     if ($rewrite) {
                         $urlPath = $rewrite->getRequestPath();
-                        // $langUlr = $store->getBaseUrl() . $urlPath;   // Check what this was for, was it to avoice including the store code for the default store?
+                        $langUlr = $store->getBaseUrl() . $urlPath;
                     } else {
                         $urlPath = $storeCategory->getUrlPath();
+                        $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
                     }
-                    $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
 
                     if ($this->urlModifier) {
                          // Amasty Shopby
