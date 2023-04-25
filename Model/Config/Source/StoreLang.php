@@ -129,7 +129,7 @@ class StoreLang
 
             try {
                 if ($type == 'category') {
-                    $storeCategory = $this->categoryRepository->get($obj->getId(), $store->getId());                   
+                    $storeCategory = $this->categoryRepository->get($obj->getId(), $store->getId());
 
                     if (!$storeCategory->getIsActive()) {
                         continue;
@@ -142,20 +142,28 @@ class StoreLang
                             UrlRewrite::STORE_ID => $store->getId(),
                         ]
                     );
-                    
-                    if ($rewrite) {
-                        $urlPath = $rewrite->getRequestPath();
-                        $langUlr = $store->getBaseUrl() . $urlPath;
-                    } else {
-                        $selectedFilters = $this->layeredNavState->getActiveFilters();
 
-                        $queryParams = [];
-                        foreach($selectedFilters as $filter){
-                            $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
-                        }                      
-                    
+                    $stripSlash = false;
+
+                    if ($rewrite) {
+                        $urlPath    = $rewrite->getRequestPath();
+                        $stripSlash = substr_compare($urlPath, '/', -1) !== 0; // Check if rewrite has a slash
+                    } else {
                         $urlPath = $storeCategory->getUrlPath();
-                        $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
+                    }
+
+                    $selectedFilters = $this->layeredNavState->getActiveFilters();
+                    $queryParams     = [];
+
+                    foreach($selectedFilters as $filter){
+                        $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
+                    }
+
+                    $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
+
+                    if ($stripSlash) {
+                        // Remove slash to avoid redirect
+                        $langUlr = substr_replace($langUlr, '', strrpos($langUlr, '/'), 1);
                     }
 
                     if ($this->urlModifier) {
