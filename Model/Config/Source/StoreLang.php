@@ -172,6 +172,8 @@ class StoreLang
                         $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
                     }
 
+                    $this->storeManager->setCurrentStore($store->getStoreId());
+
                     $langUrl = $store->getUrl($urlPath, ['_query' => $queryParams]);
 
                     if ($stripSlash) {
@@ -181,10 +183,9 @@ class StoreLang
 
                     if ($this->urlModifier) {
                         // Amasty Shopby
-                        $this->storeManager->setCurrentStore($store->getStoreId());
                         $langUrl = $this->urlModifier->execute($langUrl, $storeCategory->getId());
-                        $this->storeManager->setCurrentStore($currentStoreId);
                     }
+                    $this->storeManager->setCurrentStore($currentStoreId);
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
