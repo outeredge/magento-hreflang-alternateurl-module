@@ -7,8 +7,10 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\App\State as MagentoState;
 use Magento\LayeredNavigation\Block\Navigation\State;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -45,6 +47,11 @@ class StoreLang
     protected $urlFinder;
 
     /**
+     * @var MagentoState
+     */
+    protected $magentoState;
+
+    /**
      * @var State
      */
     protected $layeredNavState;
@@ -69,8 +76,12 @@ class StoreLang
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CategoryRepositoryInterface $categoryRepository
-     * @param CategoryRepositoryInterface $categoryRepository
+     * @param ProductRepositoryInterface $productRepository
      * @param UrlFinderInterface $urlFinder
+     * @param MagentoState $magentoState
+     * @param State $layeredNavState
+     * @param ModuleManager $moduleManager
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -78,6 +89,7 @@ class StoreLang
         CategoryRepositoryInterface $categoryRepository,
         ProductRepositoryInterface $productRepository,
         UrlFinderInterface $urlFinder,
+        MagentoState $magentoState,
         State $layeredNavState,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager
@@ -87,11 +99,12 @@ class StoreLang
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->urlFinder = $urlFinder;
+        $this->magentoState = $magentoState;
         $this->layeredNavState = $layeredNavState;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
 
-        if ($this->moduleManager->isEnabled('Amasty_ShopbyBase')) {
+        if ($this->moduleManager->isEnabled('Amasty_ShopbyBase') && $this->magentoState->getAreaCode() == Area::AREA_FRONTEND) {
             $this->urlModifier = $this->objectManager->create('Amasty\ShopbyBase\Model\UrlBuilder\UrlModifier');
         }
     }
