@@ -138,7 +138,7 @@ class StoreLang
                 $langPrefix = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $store->getStoreId());
             }
 
-            $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
+            $langUrl = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
 
             try {
                 if ($type == 'category') {
@@ -172,17 +172,17 @@ class StoreLang
                         $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
                     }
 
-                    $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
+                    $langUrl = $store->getUrl($urlPath, ['_query' => $queryParams]);
 
                     if ($stripSlash) {
                         // Remove slash to avoid redirect
-                        $langUlr = substr_replace($langUlr, '', strrpos($langUlr, '/'), 1);
+                        $langUrl = substr_replace($langUrl, '', strrpos($langUrl, '/'), 1);
                     }
 
                     if ($this->urlModifier) {
                         // Amasty Shopby
                         $this->storeManager->setCurrentStore($store->getStoreId());
-                        $langUlr = $this->urlModifier->execute($langUlr, $storeCategory->getId());
+                        $langUrl = $this->urlModifier->execute($langUrl, $storeCategory->getId());
                         $this->storeManager->setCurrentStore($currentStoreId);
                     }
                 } elseif ($type == 'product') {
@@ -192,7 +192,7 @@ class StoreLang
                         continue;
                     }
 
-                    $langUlr = $storeProduct->getProductUrl();
+                    $langUrl = $storeProduct->getProductUrl();
                 }
             } catch (NoSuchEntityException $e) {
                 continue;
@@ -200,10 +200,10 @@ class StoreLang
 
             if (is_array($langPrefix)) {
                 foreach($langPrefix as $lang) {
-                    $locale[$lang] = $langUlr;
+                    $locale[$lang] = $langUrl;
                 }
             } else {
-                $locale[$langPrefix] = $langUlr;
+                $locale[$langPrefix] = $langUrl;
             }
         }
 
