@@ -183,7 +183,7 @@ class StoreLang
 
                     if ($this->urlModifier) {
                         // Amasty Shopby
-                        $langUrl = $this->urlModifier->execute($langUrl, $storeCategory->getId());
+                        $langUrl = strtok($this->urlModifier->execute($langUrl, $storeCategory->getId()), '?');
                     }
                     $this->storeManager->setCurrentStore($currentStoreId);
                 } elseif ($type == 'product') {
