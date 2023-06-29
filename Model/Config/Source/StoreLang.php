@@ -7,8 +7,10 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\App\State as MagentoState;
 use Magento\LayeredNavigation\Block\Navigation\State;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -45,6 +47,11 @@ class StoreLang
     protected $urlFinder;
 
     /**
+     * @var MagentoState
+     */
+    protected $magentoState;
+
+    /**
      * @var State
      */
     protected $layeredNavState;
@@ -69,8 +76,12 @@ class StoreLang
      * @param StoreManagerInterface $storeManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CategoryRepositoryInterface $categoryRepository
-     * @param CategoryRepositoryInterface $categoryRepository
+     * @param ProductRepositoryInterface $productRepository
      * @param UrlFinderInterface $urlFinder
+     * @param MagentoState $magentoState
+     * @param State $layeredNavState
+     * @param ModuleManager $moduleManager
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -78,6 +89,7 @@ class StoreLang
         CategoryRepositoryInterface $categoryRepository,
         ProductRepositoryInterface $productRepository,
         UrlFinderInterface $urlFinder,
+        MagentoState $magentoState,
         State $layeredNavState,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager
@@ -87,11 +99,12 @@ class StoreLang
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->urlFinder = $urlFinder;
+        $this->magentoState = $magentoState;
         $this->layeredNavState = $layeredNavState;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
 
-        if ($this->moduleManager->isEnabled('Amasty_ShopbyBase')) {
+        if ($this->moduleManager->isEnabled('Amasty_ShopbyBase') && $this->magentoState->getAreaCode() == Area::AREA_FRONTEND) {
             $this->urlModifier = $this->objectManager->create('Amasty\ShopbyBase\Model\UrlBuilder\UrlModifier');
         }
     }
@@ -125,7 +138,7 @@ class StoreLang
                 $langPrefix = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $store->getStoreId());
             }
 
-            $langUlr = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
+            $langUrl = substr($store->getCurrentUrl(), 0, strpos($store->getCurrentUrl(), "?"));
 
             try {
                 if ($type == 'category') {
@@ -159,19 +172,20 @@ class StoreLang
                         $queryParams[$filter->getFilter()->getRequestVar()] = $filter->getValue();
                     }
 
-                    $langUlr = $store->getUrl($urlPath, ['_query' => $queryParams]);
+                    $this->storeManager->setCurrentStore($store->getStoreId());
+
+                    $langUrl = $store->getUrl($urlPath, ['_query' => $queryParams]);
 
                     if ($stripSlash) {
                         // Remove slash to avoid redirect
-                        $langUlr = substr_replace($langUlr, '', strrpos($langUlr, '/'), 1);
+                        $langUrl = substr_replace($langUrl, '', strrpos($langUrl, '/'), 1);
                     }
 
                     if ($this->urlModifier) {
                         // Amasty Shopby
-                        $this->storeManager->setCurrentStore($store->getStoreId());
-                        $langUlr = $this->urlModifier->execute($langUlr, $storeCategory->getId());
-                        $this->storeManager->setCurrentStore($currentStoreId);
+                        $langUrl = strtok($this->urlModifier->execute($langUrl, $storeCategory->getId()), '?');
                     }
+                    $this->storeManager->setCurrentStore($currentStoreId);
                 } elseif ($type == 'product') {
                     $storeProduct = $this->productRepository->getById($obj->getId(), false, $store->getId());
 
@@ -179,7 +193,7 @@ class StoreLang
                         continue;
                     }
 
-                    $langUlr = $storeProduct->getProductUrl();
+                    $langUrl = $storeProduct->getProductUrl();
                 }
             } catch (NoSuchEntityException $e) {
                 continue;
@@ -187,10 +201,10 @@ class StoreLang
 
             if (is_array($langPrefix)) {
                 foreach($langPrefix as $lang) {
-                    $locale[$lang] = $langUlr;
+                    $locale[$lang] = $langUrl;
                 }
             } else {
-                $locale[$langPrefix] = $langUlr;
+                $locale[$langPrefix] = $langUrl;
             }
         }
 
