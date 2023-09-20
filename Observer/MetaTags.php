@@ -165,8 +165,17 @@ class MetaTags implements ObserverInterface
     */
     protected function addAlternateLinkRel($href, $storeLang)
     {
+        $url = parse_url($href);
+        if (isset($url['query'])) {
+            parse_str($url['query'], $query);
+            unset($query['___store']);
+
+            $url['query'] = http_build_query($query);
+            $href = $this->buildUrl($url);
+        }
+
         if (empty($storeLang)) return;
-        
+
         $storeLang   = strtolower(str_replace('_', '-', $storeLang));
         $remoteAsset = $this->assetRepo->createRemoteAsset((string)$href, 'unknown');
 
@@ -175,6 +184,15 @@ class MetaTags implements ObserverInterface
             $remoteAsset,
             ['attributes' => 'rel="alternate" hreflang="'.$storeLang.'"']
         );
+    }
+
+    public function buildUrl($parse_url) {
+        return ((isset($parse_url['scheme'])) ? $parse_url['scheme'] . '://' : '')
+        .((isset($parse_url['host'])) ? $parse_url['host'] : '')
+        .((isset($parse_url['port'])) ? ':' . $parse_url['port'] : '')
+        .((isset($parse_url['path'])) ? $parse_url['path'] : '')
+        .((is_array($parse_url['query'])) ? '?' . $parse_url['query'] : '')
+        .((isset($parse_url['fragment'])) ? '#' . $parse_url['fragment'] : '');
     }
 
     protected function getHrefLangLocal()
