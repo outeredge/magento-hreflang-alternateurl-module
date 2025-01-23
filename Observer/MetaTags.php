@@ -12,6 +12,7 @@ use Magento\Framework\Registry;
 use OuterEdge\Hreflang\Model\Config\Source\StoreLang;
 use Magento\Framework\Locale\Resolver as LocaleResolver;
 use OuterEdge\Hreflang\Model\Config\Source\HreflangType;
+use Magento\Framework\App\Request\Http;
 
 class MetaTags implements ObserverInterface
 {
@@ -82,7 +83,8 @@ class MetaTags implements ObserverInterface
         StoreManagerInterface $storeManager,
         Registry $registry,
         StoreLang $storeLang,
-        LocaleResolver $resolver
+        LocaleResolver $resolver,
+        protected Http $request
     ) {
         $this->_pageConfig = $pageConfig;
         $this->catalogLayer = $layerResolver->get();
@@ -144,7 +146,8 @@ class MetaTags implements ObserverInterface
                 'cms_page_view',
                 'blog_category_view',
                 'blog_index_index',
-                'blog_post_view'
+                'blog_post_view',
+                'ambrand_index_index'
             ])) {
             $currentUrl = $this->storeManager->getStore()->getUrl('*/*/*', ['_current' => false, '_use_rewrite' => true]);
             $urlPath    = str_replace($baseUrl, '', $currentUrl);
@@ -264,6 +267,10 @@ class MetaTags implements ObserverInterface
 
     protected function getCategory()
     {
+        if ($this->request->getFullActionName() == 'ambrand_index_index') {
+            return false;
+        }
+        
         $category = $this->registry->registry('current_category');
         if (!$category) {
             return false;
