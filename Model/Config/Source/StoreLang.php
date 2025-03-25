@@ -193,6 +193,7 @@ class StoreLang
                         continue;
                     }
 
+                    $storeProduct->setDoNotUseCategoryId(true);
                     $langUrl = $storeProduct->getProductUrl();
                 }
             } catch (NoSuchEntityException $e) {
