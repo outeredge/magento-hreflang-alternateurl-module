@@ -193,8 +193,7 @@ class StoreLang
                         continue;
                     }
 
-                    $storeUrl = $this->storeManager->getStore()->getBaseUrl();
-                    $langUrl = $storeUrl . $storeProduct->getUrlKey();
+                    $langUrl = $storeProduct->getProductUrl();
                 }
             } catch (NoSuchEntityException $e) {
                 continue;
