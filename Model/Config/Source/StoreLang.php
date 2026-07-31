@@ -153,6 +153,7 @@ class StoreLang
                             UrlRewrite::ENTITY_ID => $storeCategory->getId(),
                             UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
                             UrlRewrite::STORE_ID => $store->getId(),
+                            UrlRewrite::REDIRECT_TYPE => 0,
                         ]
                     );
 
