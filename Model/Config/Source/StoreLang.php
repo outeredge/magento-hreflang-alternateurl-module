@@ -194,6 +194,13 @@ class StoreLang
                         continue;
                     }
 
+                    if (
+                        !$storeProduct->isVisibleInCatalog()
+                        || !$storeProduct->isVisibleInSiteVisibility()
+                    ) {
+                        continue;
+                    }
+
                     $storeProduct->setDoNotUseCategoryId(true);
                     $langUrl = $storeProduct->getProductUrl();
                 }
