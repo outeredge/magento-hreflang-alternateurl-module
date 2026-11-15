@@ -194,7 +194,7 @@ class MetaTags implements ObserverInterface
         .((isset($parse_url['host'])) ? $parse_url['host'] : '')
         .((isset($parse_url['port'])) ? ':' . $parse_url['port'] : '')
         .((isset($parse_url['path'])) ? $parse_url['path'] : '')
-        .((is_array($parse_url['query'])) ? '?' . $parse_url['query'] : '')
+        .((!empty($parse_url['query'])) ? '?' . $parse_url['query'] : '')
         .((isset($parse_url['fragment'])) ? '#' . $parse_url['fragment'] : '');
     }
 
@@ -205,7 +205,7 @@ class MetaTags implements ObserverInterface
         }
 
         return $this->scopeConfig->getValue(
-            'web/hreflang/hreflang_local',
+            'oe_hreflang/general/hreflang_local',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getStoreId()
         );
@@ -214,7 +214,7 @@ class MetaTags implements ObserverInterface
     protected function getHrefLang()
     {
         return $this->scopeConfig->getValue(
-            'web/hreflang/hreflang',
+            'oe_hreflang/general/hreflang',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getStoreId()
         );
@@ -223,7 +223,7 @@ class MetaTags implements ObserverInterface
     protected function getHrefLangBaseurl()
     {
         return $this->scopeConfig->getValue(
-            'web/hreflang/hreflang_baseurl',
+            'oe_hreflang/general/alt_baseurl',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getStoreId()
         );
@@ -232,7 +232,7 @@ class MetaTags implements ObserverInterface
     protected function getMirrorUrlPaths()
     {
         return $this->scopeConfig->getValue(
-            'web/hreflang/alternate_mirror',
+            'oe_hreflang/general/alternate_mirror',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getStoreId()
         );
